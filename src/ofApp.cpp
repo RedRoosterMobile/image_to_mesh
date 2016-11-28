@@ -5,7 +5,7 @@ void ofApp::setup(){
     
     ofSetFrameRate(30);
     image.load("stars.png");
-    // image.load("sofa250x250.png");
+    //image.load("sofa250x250.png");
     image.resize(200, 200);
     
     mesh.setMode(OF_PRIMITIVE_POINTS);
@@ -32,10 +32,19 @@ void ofApp::setup(){
                 mesh.addColor(c);
             }*/
             // shrunken image
-            if (intensity >= intensityThreshold) {
+            
+            /*if (intensity >= intensityThreshold) {
                 // We shrunk our image by a factor of 4, so we need to multiply our pixel
                 // locations by 4 in order to have our mesh cover the openFrameworks window
                 ofVec3f pos(x*4, y*4, 0.0);
+                mesh.addVertex(pos);
+                mesh.addColor(c);
+            }*/
+            // shrunken and z-adjusted by saturation
+            if (intensity >= intensityThreshold) {
+                float saturation = c.getSaturation();
+                float z = ofMap(saturation, 0, 255, -100, 100);
+                ofVec3f pos(x*4, y*4, z);
                 mesh.addVertex(pos);
                 mesh.addColor(c);
             }
@@ -68,13 +77,25 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+/*void ofApp::draw(){
     // image.draw(0,0);
     ofColor centerColor = ofColor(85, 78, 68);
     ofColor edgeColor(0, 0, 0);
     ofBackgroundGradient(centerColor, edgeColor, OF_GRADIENT_CIRCULAR);
     mesh.draw();
     
+}*/
+void ofApp::draw(){
+    ofColor centerColor = ofColor(85, 78, 68);
+    ofColor edgeColor(0, 0, 0);
+    ofBackgroundGradient(centerColor, edgeColor, OF_GRADIENT_CIRCULAR);
+    
+    easyCam.begin();
+        ofPushMatrix();
+            ofTranslate(-ofGetWidth()/2, -ofGetHeight()/2);
+            mesh.draw();
+        ofPopMatrix();
+    easyCam.end();
 }
 
 //--------------------------------------------------------------

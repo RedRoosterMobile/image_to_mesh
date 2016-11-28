@@ -25,5 +25,6 @@ class ofApp : public ofBaseApp{
     
     ofImage image;
     ofMesh mesh;
+    ofEasyCam easyCam;
 		
 };

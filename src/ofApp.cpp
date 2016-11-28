@@ -6,12 +6,12 @@ void ofApp::setup(){
     // Add this line to explicitly set the framerate to 60 frames per second:
     ofSetFrameRate(60);
     
-    image.load("stars.png"); // threshold: 150
-    // image.load("yoda.png");
+    image.load("stars.png");image.resize(200, 200); // threshold: 150
+    //image.load("yoda.png");image.resize(128, 128);
     // image.load("hemp_benefits.jpg");
     // image.load("sofa250x250.png");
-    // image.load("sofatutor_balanced2.png"); // th: 100
-    image.resize(200, 200);
+    // image.load("sofatutor_balanced2.png");image.resize(100, 75); // th: 100
+    
     
     mesh.setMode(OF_PRIMITIVE_POINTS);
     mesh.enableColors();
@@ -80,6 +80,32 @@ void ofApp::setup(){
             }
         }
     }
+    
+    // ORBIT
+    // We need to calculate our center point for the mesh
+    // ofMesh has a method called getCentroid() that will
+    // find the average location over all of our vertices
+    //    http://en.wikipedia.org/wiki/Centroid
+    meshCentroid = mesh.getCentroid();
+    
+    // Now that we know our centroid, we need to know the polar coordinates
+    // (distance and angle) of each vertex relative to that center point.
+    // We've found the distance between points before, but what about the angle?
+    // This is where atan2 comes in.  atan2(y, x) takes an x and y value and returns
+    // the angle relative to the origin (0,0).  If we want the angle between two
+    // points (x1, y1) and (x2, y2) then we just need to use atan2(y2-y1, x2-x1).
+    for (int i=0; i<numVerts; ++i) {
+        ofVec3f vert = mesh.getVertex(i);
+        float distance = vert.distance(meshCentroid);
+        float angle = atan2(vert.y-meshCentroid.y, vert.x-meshCentroid.x);
+        distances.push_back(distance);
+        angles.push_back(angle);
+    }
+    
+    // These variables will allow us to toggle orbiting on and off
+    orbiting = false;
+    startOrbitTime = 0.0;
+    meshCopy = mesh; // Store a copy of the mesh, so that we can reload the original state
 }
 
 //--------------------------------------------------------------
@@ -112,9 +138,34 @@ void ofApp::update(){
         vert.z += (ofSignedNoise(time*timeScale+timeOffsets.z)) * displacementScale;
         mesh.setVertex(i, vert);
     }
+    if (orbiting) {
+        int numVerts = mesh.getNumVertices();
+        for (int i=0; i<numVerts; ++i) {
+            ofVec3f vert = mesh.getVertex(i);
+            float distance = distances[i];
+            float angle = angles[i];
+            float elapsedTime = ofGetElapsedTimef() - startOrbitTime;
+            
+            // Lets adjust the speed of the orbits such that things that are closer to
+            // the center rotate faster than things that are more distant
+            float speed = ofMap(distance, 0, 200, 1, 0.25, true);
+            
+            // To find the angular rotation of our vertex, we use the current time and
+            // the starting angular rotation
+            float rotatedAngle = elapsedTime * speed + angle;
+            
+            // Remember that our distances are calculated relative to the centroid
+            // of the mesh, so we need to shift everything back to screen
+            // coordinates by adding the x and y of the centroid
+            vert.x = distance * cos(rotatedAngle) + meshCentroid.x;
+            vert.y = distance * sin(rotatedAngle) + meshCentroid.y;
+            
+            mesh.setVertex(i, vert);
+        }
+    }
 }
 
-//--------------------------------------------------------------
+//--------------------------------------------------------------2Dish
 /*void ofApp::draw(){
     // image.draw(0,0);
     ofColor centerColor = ofColor(85, 78, 68);
@@ -123,6 +174,7 @@ void ofApp::update(){
     mesh.draw();
     
 }*/
+//--------------------------------------------------------------3Dish
 void ofApp::draw(){
     ofColor centerColor = ofColor(85, 78, 68);
     ofColor edgeColor(0, 0, 0);
@@ -138,7 +190,11 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
+    if (key == 'o') {
+        orbiting = !orbiting; // This inverts the boolean
+        startOrbitTime = ofGetElapsedTimef();
+        mesh = meshCopy; // This restores the mesh to its original values
+    }
 }
 
 //--------------------------------------------------------------

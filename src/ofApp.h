@@ -1,6 +1,7 @@
 #pragma once
 
 // example from: http://openframeworks.cc/ofBook/chapters/generativemesh.html
+// IDEA: connect jitter with sound http://openframeworks.cc/ofBook/chapters/sound.html
 
 #include "ofMain.h"
 
@@ -27,5 +28,15 @@ class ofApp : public ofBaseApp{
     ofMesh mesh;
     ofEasyCam easyCam;
     vector<ofVec3f> offsets;
+    
+    // We are going to use these to allow us to toggle orbiting on and off
+    ofMesh meshCopy;
+    bool orbiting;
+    float startOrbitTime;
+    
+    // These variables will let us store the polar coordinates of each vertex
+    vector<float> distances;
+    vector<float> angles;
+    ofVec3f meshCentroid;
 		
 };

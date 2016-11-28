@@ -26,5 +26,6 @@ class ofApp : public ofBaseApp{
     ofImage image;
     ofMesh mesh;
     ofEasyCam easyCam;
+    vector<ofVec3f> offsets;
 		
 };

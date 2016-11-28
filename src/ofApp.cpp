@@ -3,9 +3,14 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    ofSetFrameRate(30);
-    image.load("stars.png");
-    //image.load("sofa250x250.png");
+    // Add this line to explicitly set the framerate to 60 frames per second:
+    ofSetFrameRate(60);
+    
+    image.load("stars.png"); // threshold: 150
+    // image.load("yoda.png");
+    // image.load("hemp_benefits.jpg");
+    // image.load("sofa250x250.png");
+    // image.load("sofatutor_balanced2.png"); // th: 100
     image.resize(200, 200);
     
     mesh.setMode(OF_PRIMITIVE_POINTS);
@@ -47,6 +52,12 @@ void ofApp::setup(){
                 ofVec3f pos(x*4, y*4, z);
                 mesh.addVertex(pos);
                 mesh.addColor(c);
+                
+                // And add this line to your existing for loop:
+                // It will create a ofVec3f with 3 random values, which
+                // will allow us to move the x, y and z coordinates of
+                // each vertex independently
+                offsets.push_back(ofVec3f(ofRandom(0,100000), ofRandom(0,100000), ofRandom(0,100000)));
             }
         }
     }
@@ -73,7 +84,34 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    int numVerts = mesh.getNumVertices();
+    for (int i=0; i<numVerts; ++i) {
+        ofVec3f vert = mesh.getVertex(i);
+        
+        float time = ofGetElapsedTimef();
+        float timeScale = 5.0;
+        float displacementScale = 0.75;
+        ofVec3f timeOffsets = offsets[i];
+        
+        // A typical design pattern for using Perlin noise uses a couple parameters:
+        // ofSignedNoise(time*timeScale+timeOffset)*displacementScale
+        //     ofSignedNoise(time) gives us noise values that change smoothly over
+        //         time
+        //     ofSignedNoise(time*timeScale) allows us to control the smoothness of
+        //         our noise (smaller timeScale, smoother values)
+        //     ofSignedNoise(time+timeOffset) allows us to use the same Perlin noise
+        //         function to control multiple things and have them look as if they
+        //         are moving independently
+        //     ofSignedNoise(time)*displacementScale allows us to change the bounds
+        //         of the noise from [-1, 1] to whatever we want
+        // Combine all of those parameters together, and you've got some nice
+        // control over your noise
+        
+        vert.x += (ofSignedNoise(time*timeScale+timeOffsets.x)) * displacementScale;
+        vert.y += (ofSignedNoise(time*timeScale+timeOffsets.y)) * displacementScale;
+        vert.z += (ofSignedNoise(time*timeScale+timeOffsets.z)) * displacementScale;
+        mesh.setVertex(i, vert);
+    }
 }
 
 //--------------------------------------------------------------

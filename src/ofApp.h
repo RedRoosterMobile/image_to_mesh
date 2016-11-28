@@ -1,5 +1,7 @@
 #pragma once
 
+// example from: http://openframeworks.cc/ofBook/chapters/generativemesh.html
+
 #include "ofMain.h"
 
 class ofApp : public ofBaseApp{

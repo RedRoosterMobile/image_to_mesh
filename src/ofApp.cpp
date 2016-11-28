@@ -2,12 +2,20 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    
+    ofSetFrameRate(30);
     image.load("stars.png");
     // image.load("sofa250x250.png");
     image.resize(200, 200);
     
     mesh.setMode(OF_PRIMITIVE_POINTS);
     mesh.enableColors();
+    
+    // Don't forget to change to lines mode!
+    mesh.setMode(OF_PRIMITIVE_LINES);
+    
+    // We are going to be using indices this time
+    mesh.enableIndices();
     
     float intensityThreshold = 150.0;
     int w = image.getWidth();
@@ -35,6 +43,23 @@ void ofApp::setup(){
     }
     // With a threshold of 150, there will be ~64,000 vertices
     cout << mesh.getNumVertices() << endl;
+    
+    // Let's add some lines!
+    float connectionDistance = 30;
+    int numVerts = mesh.getNumVertices();
+    for (int a=0; a<numVerts; ++a) {
+        ofVec3f verta = mesh.getVertex(a);
+        for (int b=a+1; b<numVerts; ++b) {
+            ofVec3f vertb = mesh.getVertex(b);
+            float distance = verta.distance(vertb);
+            if (distance <= connectionDistance) {
+                // In OF_PRIMITIVE_LINES, every pair of vertices or indices will be
+                // connected to form a line
+                mesh.addIndex(a);
+                mesh.addIndex(b);
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
